@@ -17,7 +17,7 @@
       <single>
         <title>Total Hours Played</title>
         <search>
-          <query>index=steam | dedup Game_Name, User_Name sortby - _time | eval Game_Hours_Played=round(Game_Minutes_Played/60) | stats sum(Game_Hours_Played)</query>
+          <query>index=steam | dedup Game_Name, User_Name sortby - _time | eval Game_Hours_Played=round(Game_Minutes_Played_All_Time/60) | stats sum(Game_Hours_Played)</query>
           <earliest>-24h@h</earliest>
           <latest>now</latest>
         </search>
