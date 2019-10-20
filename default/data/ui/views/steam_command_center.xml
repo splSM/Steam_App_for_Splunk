@@ -1,0 +1,217 @@
+<dashboard theme="dark" stylesheet="steam.css" script="steam.js">
+  <label>Steam Command Center</label>
+  <row>
+    <panel>
+      <single>
+        <title>Total Games</title>
+        <search>
+          <query>index=steam | dedup Game_Name, User_Name sortby - _time | stats count</query>
+          <earliest>-24h@h</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="height">50</option>
+      </single>
+    </panel>
+    <panel>
+      <single>
+        <title>Total Hours Played</title>
+        <search>
+          <query>index=steam | dedup Game_Name, User_Name sortby - _time | eval Game_Hours_Played=round(Game_Minutes_Played/60) | stats sum(Game_Hours_Played)</query>
+          <earliest>-24h@h</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="height">50</option>
+      </single>
+    </panel>
+    <panel>
+      <single>
+        <title>Total Achievements</title>
+        <search>
+          <query>index=steam | dedup Game_Name, User_Name sortby - _time | stats sum(Achievements_Achieved)</query>
+          <earliest>-24h@h</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="height">50</option>
+      </single>
+    </panel>
+    <panel>
+      <single>
+        <title>Total Achievement Percentage</title>
+        <search>
+          <query>index=steam | dedup Game_Name, User_Name sortby - _time | stats sum(Achievements_Achieved) as Achieved, sum(Achievements_Available) as Available | eval Percentage=round(100/(Available/Achieved))."%" | table Percentage</query>
+          <earliest>-24h@h</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="height">50</option>
+      </single>
+    </panel>
+    <panel>
+      <single>
+        <title>Games @ 100% Achievement</title>
+        <search>
+          <query>index=steam Achievements_Available!=0 | dedup Game_Name, User_Name sortby - _time | where match(Achievements_Achieved, Achievements_Available) | stats count</query>
+          <earliest>-24h@h</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="height">50</option>
+      </single>
+    </panel>
+  </row>
+  <row>
+    <panel id="twoThirds1">
+      <table id="avatar1">
+        <title>Steam Users</title>
+        <search>
+          <query>index=steam | dedup User_Name sortby - _time | eval User_Name=coalesce(User_Persona, User_Name, User_ID)
+| eval IRL=coalesce(User_Name_Real, "Not Provided")
+| eval Last_Online=strftime(User_Last_Logoff,"%Y-%m-%d %H:%M:%S")
+| eval Account_Created=strftime(User_Created,"%Y-%m-%d %H:%M:%S")
+| table User_URL_Avatar_Small User_Name IRL Account_Created Last_Online | sort - Last_Online
+| rename User_URL_Avatar_Small as Avatar, User_Name as User, Account_Created as "User Created", Last_Online as "Last Online"</query>
+          <earliest>-24h</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="count">5</option>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+    <panel id="oneThird1">
+      <table id="avatar2">
+        <title>Most Games</title>
+        <search>
+          <query>index=steam | dedup Game_Name, User_Name sortby - _time | eval User_Name=coalesce(User_Persona, User_Name, User_ID) | stats count by User_URL_Avatar_Small, User_Name | sort - count | rename User_URL_Avatar_Small as Avatar, User_Name as User, count as Games</query>
+          <earliest>-24h</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="count">5</option>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel id="twoThirds2">
+      <chart>
+        <title>Achievements by User</title>
+        <search>
+          <query>index=steam | dedup Game_Name, User_Name sortby - _time | eval User_Name=coalesce(User_Persona, User_Name, User_ID)
+| eval Achievements_Percentage=100/(Achievements_Available/Achievements_Achieved)
+| eventstats sum(Achievements_Achieved) as Achieved, sum(Achievements_Available) as Available by User_Name
+| eval Percentage=round(100/(Available/Achieved))
+| stats values(Percentage) as "Total Achievements Percentage (All Games)", count(eval(Achievements_Percentage&gt;24)) as Games_25, count(eval(Achievements_Percentage&gt;49)) as Games_50, count(eval(Achievements_Percentage&gt;74)) as Games_75, count(eval(Achievements_Percentage&gt;99)) as Games_100 by User_Name
+| sort - "Total Achievements Percentage (All Games)"
+| rename User_Name as User, Games_25 as "Games &gt;25% Complete", Games_50 as "Games &gt;50% Complete", Games_75 as "Games &gt;75% Complete", Games_100 as "Games 100% Complete"</query>
+          <earliest>-24h@h</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="charting.chart">bar</option>
+        <option name="charting.chart.showDataLabels">all</option>
+        <option name="charting.chart.stackMode">stacked100</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="charting.seriesColors">[0x55CBDE, 0xFFA35F, 0xFFF85F, 0xE354DC, 0x67F059]</option>
+      </chart>
+    </panel>
+    <panel id="oneThird2">
+      <chart>
+        <title>Most Hours Played (Lifetime)</title>
+        <search>
+          <query>index=steam | dedup Game_Name, User_Name sortby - _time | eval User_Name=coalesce(User_Persona, User_Name, User_ID) | eval Game_Hours_Played=round(Game_Minutes_Played_All_Time/60) | stats sum(Game_Hours_Played) as Total_Hours by User_Name | sort - Total_Hours | rename User_Name as User, Total_Hours as "Hours Played"</query>
+          <earliest>-24h</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="charting.chart">pie</option>
+        <option name="charting.drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="charting.seriesColors">[0x55CBDE, 0x67F059, 0xE354DC, 0xFFF85F, 0xFFA35F, 0xFF635F, 0x55CBDE, 0x67F059, 0xE354DC, 0xFFF85F, 0xFFA35F, 0xFF635F]</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <table id="avatar3">
+        <title>Achievements: Percentage (All Games)</title>
+        <search>
+          <query>index=steam | dedup Game_Name, User_Name sortby - _time | eval User_Name=coalesce(User_Persona, User_Name, User_ID) | stats sum(Achievements_Achieved) as Achieved, sum(Achievements_Available) as Available by User_URL_Avatar_Small, User_Name | eval Percentage=round(100/(Available/Achieved))."%" | table User_URL_Avatar_Small, User_Name Available Achieved Percentage | rename User_URL_Avatar_Small as Avatar, User_Name as User | sort - Percentage</query>
+          <earliest>-24h</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="count">5</option>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+    <panel>
+      <table id="avatar4">
+        <title>Recent Achievements</title>
+        <search>
+          <query>index=steam Achievements_Names!=None | dedup Game_Name, User_Name sortby - _time | eval User_Name=coalesce(User_Persona, User_Name, User_ID) | makemv delim="," Achievements_Names | mvexpand Achievements_Names
+| rex field=Achievements_Names "(?&lt;Ach_Name&gt;[^:]*):(?&lt;Ach_Time&gt;[^:]*)"
+| eval Month_Ago=relative_time(now(), "-90d")
+| where Ach_Time&gt;Month_Ago
+| eval Ach_Time=strftime(Ach_Time,"%Y-%m-%d")
+| table User_URL_Avatar_Small User_Name Game_Name Ach_Name Ach_Time
+| sort - Ach_Time
+| rename User_URL_Avatar_Small as Avatar, User_Name as User, Game_Name as Game, Ach_Name as Achievement, Ach_Time as Achieved</query>
+          <earliest>-24h</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="count">3</option>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+    <panel>
+      <table id="avatar5">
+        <title>Most Hours Played (Last 2 Weeks)</title>
+        <search>
+          <query>index=steam | dedup Game_Name, User_Name sortby - _time | eval User_Name=coalesce(User_Persona, User_Name, User_ID) | stats sum(Game_Minutes_Played_Two_Weeks) as Minutes by User_URL_Avatar_Small, User_Name | eval Hours=round(Minutes/60, 2) | table User_URL_Avatar_Small User_Name Hours | sort - Hours | rename User_URL_Avatar_Small as Avatar, User_Name as User, Hours as "Hours Played"</query>
+          <earliest>-24h</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="count">5</option>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel id="twoThirds3">
+      <table id="avatar6">
+        <title>Highest Achievements by Game</title>
+        <search>
+          <done>
+            <set token="jobSID">$job.sid$</set>
+          </done>
+          <query>index=steam | dedup Game_Name, User_Name sortby - _time | eval User_Name=coalesce(User_Persona, User_Name, User_ID) | eval Percentage=round(100/(Achievements_Available/Achievements_Achieved))."%" | table User_URL_Avatar_Small User_Name Game_Name Achievements_Available Achievements_Achieved Percentage | sort - Percentage | rename User_URL_Avatar_Small as Avatar, User_Name as User, Game_Name as Game, Achievements_Available as Available, Achievements_Achieved as Achieved</query>
+          <earliest>-24h</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="count">5</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+    <panel id="oneThird3">
+      <table id="avatar7">
+        <title>Most Hours Played by Game</title>
+        <search>
+          <query>index=steam | dedup Game_Name, User_Name sortby - _time | eval User_Name=coalesce(User_Persona, User_Name, User_ID) | eval Game_Hours_Played=round(Game_Minutes_Played_All_Time/60) | table User_URL_Avatar_Small User_Name Game_Name Game_Hours_Played | sort - Game_Hours_Played | rename User_URL_Avatar_Small as Avatar, User_Name as User, Game_Name as Game, Game_Hours_Played as "Hours Played"</query>
+          <earliest>-24h</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="count">5</option>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+  </row>
+</dashboard>

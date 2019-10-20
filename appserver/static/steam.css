@@ -1,0 +1,30 @@
+
+.dashboard-body {
+ background-color: #34435a !important;
+ background: url('/static/app/steam/steamBG.png') no-repeat center top;
+}
+.dashboard-title {
+ height: 33px;
+}
+h1 {
+ font-size: 234% !important;
+ color: #55cbde !important;
+}
+h3 {
+ font-size: 150% !important;
+ color: #55cbde !important;
+}
+#twoThirds1, #twoThirds2, #twoThirds3 {
+ width: 66.67% !important;
+}
+#oneThird1, #oneThird2, #oneThird3 {
+ width: 33.33% !important;
+}
+.highcharts-data-label text tspan {
+ fill: #55cbde !important;
+ font-weight: bold !important;
+}
+.highcharts-data-label-color-undefined text tspan {
+ fill: #000000 !important;
+ font-weight: bold !important;
+}

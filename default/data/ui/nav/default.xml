@@ -1,0 +1,4 @@
+<nav search_view="search">
+  <view name="steam_command_center" default='true' />
+  <view name="search" />
+</nav>
