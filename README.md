@@ -4,7 +4,7 @@ Consume and visualize Steam data from you and your friends - see who comes out o
 
  - Developed in 7.3.0; has not been tested in other versions.
  - If for some reason you're actually running this in a distributed environment :) then make sure indexes.conf (or its contents) are on your indexers.
-   - This is IMPORTANT! You don't want your SHs lounging around with a useless index, and you don't want your IDXs to have the steam index, otherwise this'll all be for naught. :(
+   - This is IMPORTANT! You don't want your SHs lounging around with a useless index, and you want your IDXs to have the steam index, or this'll all be for naught. :(
  - To get a Steam API Key, go here (https://steamcommunity.com/dev) (or, more specifically, here: https://steamcommunity.com/dev/apikey).
    - Steam API Documentation: https://developer.valvesoftware.com/wiki/Steam_Web_API.
  - This app will accept Steam Usernames in a comma-delimited format - do not use spaces or any other delimiters in the App Setup page.
