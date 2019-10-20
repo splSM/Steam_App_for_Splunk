@@ -20,7 +20,7 @@ Consume and visualize Steam data from you and your friends - see who comes out o
 ### To-Do:
 
  - Add an "Ingestion Interval" block to setup.xml which will let the user set a cron schedule for getGamesAndAchieves.py
-  - Right now, it throws Ye Olde "Cannot find item for POST" Error
+   - Right now, it throws Ye Olde "Cannot find item for POST" Error
 
 ### Support:
 
