@@ -1,6 +1,9 @@
 Consume and visualize Steam data from you and your friends - see who comes out on top!
 
-### Notes:
+### 1.0.1:
+- Correction to a search on the main dashboard
+
+### App Notes:
 
  - Developed in 7.3.0; has not been tested in other versions.
  - If for some reason you're actually running this in a distributed environment :) then make sure indexes.conf (or its contents) are on your indexers.
